@@ -7,16 +7,13 @@ import com.skm_labs.train_booking_system.dto.response.BookingResponseDTO;
 import com.skm_labs.train_booking_system.dto.response.TrainScheduleDTO;
 import com.skm_labs.train_booking_system.entity.Booking;
 import com.skm_labs.train_booking_system.entity.Schedule;
-import com.skm_labs.train_booking_system.entity.User;
 import com.skm_labs.train_booking_system.entity.enums.BookingStatus;
 import com.skm_labs.train_booking_system.exception.BookingNotFoundException;
 import com.skm_labs.train_booking_system.exception.SeatNotAvailableException;
 import com.skm_labs.train_booking_system.repository.BookingRepository;
 import com.skm_labs.train_booking_system.repository.ScheduleRepository;
 import com.skm_labs.train_booking_system.service.BookingService;
-import com.skm_labs.train_booking_system.service.EmailService;
 import com.skm_labs.train_booking_system.service.ScheduleService;
-import com.skm_labs.train_booking_system.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -38,12 +35,25 @@ public class BookingServiceImpl implements BookingService {
     
     private final BookingRepository bookingRepository;
     private final ScheduleRepository scheduleRepository;
-    private final UserService userService;
     private final ScheduleService scheduleService;
-    private final EmailService emailService;
     
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getAllStations() {
+        log.info("Fetching all available station names");
+        
+        try {
+            List<String> stations = scheduleRepository.findAllUniqueStations();
+            log.info("Found {} unique stations", stations.size());
+            return stations;
+        } catch (Exception e) {
+            log.error("Error fetching station names: {}", e.getMessage());
+            throw new RuntimeException("Failed to fetch station names", e);
+        }
+    }
     
     @Override
     @Transactional(readOnly = true)
@@ -70,11 +80,10 @@ public class BookingServiceImpl implements BookingService {
     
     @Override
     public BookingResponseDTO createBooking(BookingRequestDTO bookingRequest) {
-        log.info("Creating booking for user ID: {} on schedule ID: {}", 
-                bookingRequest.getUserId(), bookingRequest.getScheduleId());
+        log.info("Creating booking for passenger: {} on schedule ID: {}", 
+                bookingRequest.getPassengerName(), bookingRequest.getScheduleId());
         
-        // Validate user and schedule
-        User user = userService.findById(bookingRequest.getUserId());
+        // Validate schedule
         Schedule schedule = scheduleService.findById(bookingRequest.getScheduleId());
         
         // Check seat availability
@@ -85,8 +94,8 @@ public class BookingServiceImpl implements BookingService {
         
         // Create booking
         Booking booking = new Booking();
-        booking.setUser(user);
         booking.setSchedule(schedule);
+        booking.setUserId(1L); // TODO: Set actual user ID when User authentication is implemented
         booking.setPassengerName(bookingRequest.getPassengerName());
         booking.setPassengerEmail(bookingRequest.getPassengerEmail());
         booking.setPassengerPhone(bookingRequest.getPassengerPhone());
@@ -101,39 +110,8 @@ public class BookingServiceImpl implements BookingService {
         // Update available seats
         scheduleService.updateAvailableSeats(schedule.getId(), -bookingRequest.getSeatCount());
         
-        // Send confirmation email
-        String trainDetails = String.format("%s (%s) from %s to %s on %s at %s",
-                schedule.getTrain().getTrainName(),
-                schedule.getTrain().getTrainNumber(),
-                schedule.getDepartureStation(),
-                schedule.getArrivalStation(),
-                schedule.getDepartureDate().format(DATE_FORMATTER),
-                schedule.getDepartureTime().format(TIME_FORMATTER));
-        
-        emailService.sendBookingConfirmation(
-                booking.getPassengerEmail(),
-                booking.getPassengerName(),
-                booking.getPnrNumber(),
-                trainDetails
-        );
-        
         log.info("Booking created successfully with PNR: {}", savedBooking.getPnrNumber());
         return convertToBookingResponseDTO(savedBooking);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<BookingResponseDTO> getUserBookings(Long userId) {
-        log.info("Fetching bookings for user ID: {}", userId);
-        
-        // Validate user exists
-        userService.findById(userId);
-        
-        List<Booking> bookings = bookingRepository.findByUserId(userId);
-        
-        return bookings.stream()
-                .map(this::convertToBookingResponseDTO)
-                .collect(Collectors.toList());
     }
     
     @Override
@@ -208,13 +186,6 @@ public class BookingServiceImpl implements BookingService {
         // Release seats
         scheduleService.updateAvailableSeats(booking.getSchedule().getId(), booking.getSeatCount());
         
-        // Send cancellation email
-        emailService.sendCancellationEmail(
-                booking.getPassengerEmail(),
-                booking.getPassengerName(),
-                booking.getPnrNumber()
-        );
-        
         log.info("Booking cancelled successfully: {}", bookingId);
         return convertToBookingResponseDTO(cancelledBooking);
     }
@@ -253,6 +224,32 @@ public class BookingServiceImpl implements BookingService {
         return pnrNumber;
     }
     
+    @Override
+    @Transactional(readOnly = true)
+    public List<BookingResponseDTO> getAllBookings() {
+        log.info("Fetching all bookings");
+        
+        List<Booking> bookings = bookingRepository.findAll();
+        
+        List<BookingResponseDTO> bookingResponses = bookings.stream()
+                .map(this::convertToBookingResponseDTO)
+                .collect(Collectors.toList());
+        
+        log.info("Found {} bookings", bookingResponses.size());
+        return bookingResponses;
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public BookingResponseDTO getBookingById(Long bookingId) {
+        log.info("Fetching booking by ID: {}", bookingId);
+        
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new BookingNotFoundException(bookingId));
+        
+        return convertToBookingResponseDTO(booking);
+    }
+    
     private TrainScheduleDTO convertToTrainScheduleDTO(Schedule schedule) {
         return TrainScheduleDTO.builder()
                 .scheduleId(schedule.getId())
@@ -274,7 +271,6 @@ public class BookingServiceImpl implements BookingService {
     private BookingResponseDTO convertToBookingResponseDTO(Booking booking) {
         return BookingResponseDTO.builder()
                 .bookingId(booking.getId())
-                .userId(booking.getUser().getId())
                 .scheduleId(booking.getSchedule().getId())
                 .passengerName(booking.getPassengerName())
                 .passengerEmail(booking.getPassengerEmail())

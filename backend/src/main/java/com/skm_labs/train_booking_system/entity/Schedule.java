@@ -9,9 +9,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
-/**
- * Schedule entity representing train schedules
- */
 @Entity
 @Table(name = "schedules")
 @Data

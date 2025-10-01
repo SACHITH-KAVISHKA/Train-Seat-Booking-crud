@@ -14,6 +14,12 @@ import java.util.List;
 public interface BookingService {
     
     /**
+     * Get all available station names
+     * @return list of unique station names
+     */
+    List<String> getAllStations();
+    
+    /**
      * Search available trains based on criteria
      * @param searchRequest search criteria
      * @return list of available train schedules
@@ -26,13 +32,6 @@ public interface BookingService {
      * @return created booking response
      */
     BookingResponseDTO createBooking(BookingRequestDTO bookingRequest);
-    
-    /**
-     * Get user's booking history
-     * @param userId user ID
-     * @return list of user bookings
-     */
-    List<BookingResponseDTO> getUserBookings(Long userId);
     
     /**
      * Update existing booking
@@ -55,6 +54,19 @@ public interface BookingService {
      * @return booking response
      */
     BookingResponseDTO getBookingByPnr(String pnrNumber);
+    
+    /**
+     * Get all bookings
+     * @return list of all bookings
+     */
+    List<BookingResponseDTO> getAllBookings();
+    
+    /**
+     * Get booking by ID
+     * @param bookingId booking ID
+     * @return booking response
+     */
+    BookingResponseDTO getBookingById(Long bookingId);
     
     /**
      * Generate unique PNR number

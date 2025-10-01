@@ -48,19 +48,6 @@ public class GlobalExceptionHandler {
     }
     
     /**
-     * Handle user not found exception
-     */
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleUserNotFoundException(
-            UserNotFoundException ex, WebRequest request) {
-        
-        ErrorResponse errorResponse = createErrorResponse(
-                HttpStatus.NOT_FOUND, "Not Found", ex.getMessage(), request);
-        
-        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
-    }
-    
-    /**
      * Handle train not found exception
      */
     @ExceptionHandler(TrainNotFoundException.class)

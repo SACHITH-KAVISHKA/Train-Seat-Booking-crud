@@ -18,21 +18,6 @@ import java.util.Optional;
 public interface BookingRepository extends JpaRepository<Booking, Long> {
     
     /**
-     * Find bookings by user ID
-     * @param userId user ID
-     * @return List of bookings
-     */
-    List<Booking> findByUserId(Long userId);
-    
-    /**
-     * Find bookings by user ID and booking status
-     * @param userId user ID
-     * @param bookingStatus booking status
-     * @return List of bookings
-     */
-    List<Booking> findByUserIdAndBookingStatus(Long userId, BookingStatus bookingStatus);
-    
-    /**
      * Find booking by PNR number
      * @param pnrNumber PNR number
      * @return Optional booking
@@ -46,12 +31,4 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
      * @return List of bookings
      */
     List<Booking> findByBookingStatusAndBookingDateBefore(BookingStatus bookingStatus, LocalDateTime dateTime);
-    
-    /**
-     * Count bookings by user ID
-     * @param userId user ID
-     * @return count of bookings
-     */
-    @Query("SELECT COUNT(b) FROM Booking b WHERE b.user.id = :userId")
-    Long countByUserId(@Param("userId") Long userId);
 }

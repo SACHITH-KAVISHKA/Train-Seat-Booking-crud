@@ -13,9 +13,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class BookingRequestDTO {
     
-    @NotNull(message = "User ID is required")
-    private Long userId;
-    
     @NotNull(message = "Schedule ID is required")
     private Long scheduleId;
     

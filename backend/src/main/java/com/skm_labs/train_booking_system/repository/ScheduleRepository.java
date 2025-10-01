@@ -58,4 +58,14 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
                                         @Param("arrivalStation") String arrivalStation,
                                         @Param("departureDate") LocalDate departureDate,
                                         @Param("requiredSeats") Integer requiredSeats);
+    
+    /**
+     * Find all unique station names (both departure and arrival stations)
+     * @return List of unique station names
+     */
+    @Query("SELECT DISTINCT s.departureStation FROM Schedule s " +
+           "UNION " +
+           "SELECT DISTINCT s.arrivalStation FROM Schedule s " +
+           "ORDER BY 1")
+    List<String> findAllUniqueStations();
 }

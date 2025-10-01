@@ -18,7 +18,6 @@ import java.time.LocalDateTime;
 public class BookingResponseDTO {
     
     private Long bookingId;
-    private Long userId;
     private Long scheduleId;
     private String passengerName;
     private String passengerEmail;

@@ -9,9 +9,6 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
-/**
- * Booking entity representing train bookings
- */
 @Entity
 @Table(name = "bookings")
 @Data
@@ -24,12 +21,13 @@ public class Booking {
     private Long id;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "schedule_id", nullable = false)
     private Schedule schedule;
+    
+    // Temporary field to handle existing database schema
+    // TODO: Remove this when User entity is properly implemented
+    @Column(name = "user_id", nullable = false, columnDefinition = "BIGINT DEFAULT 1")
+    private Long userId = 1L;
     
     @Column(name = "passenger_name", nullable = false)
     private String passengerName;

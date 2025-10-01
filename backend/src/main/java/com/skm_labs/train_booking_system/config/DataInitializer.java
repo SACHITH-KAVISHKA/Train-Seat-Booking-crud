@@ -2,11 +2,9 @@ package com.skm_labs.train_booking_system.config;
 
 import com.skm_labs.train_booking_system.entity.Schedule;
 import com.skm_labs.train_booking_system.entity.Train;
-import com.skm_labs.train_booking_system.entity.User;
 import com.skm_labs.train_booking_system.entity.enums.TrainType;
 import com.skm_labs.train_booking_system.repository.ScheduleRepository;
 import com.skm_labs.train_booking_system.repository.TrainRepository;
-import com.skm_labs.train_booking_system.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -27,53 +25,59 @@ public class DataInitializer implements CommandLineRunner {
     
     private final TrainRepository trainRepository;
     private final ScheduleRepository scheduleRepository;
-    private final UserRepository userRepository;
     
     @Override
     public void run(String... args) throws Exception {
-        log.info("Starting data initialization...");
+        log.info("Starting Sri Lankan train data initialization...");
         
-        // Initialize only if database is empty
-        if (trainRepository.count() == 0) {
-            initializeTrains();
-            initializeUsers();
-            initializeSchedules();
-            log.info("Sample data initialization completed successfully!");
-        } else {
-            log.info("Database already contains data. Skipping initialization.");
-        }
+        // Clear existing data and reinitialize with Sri Lankan data
+        clearExistingData();
+        initializeSriLankanTrains();
+        initializeSriLankanSchedules();
+        log.info("Sri Lankan train data initialization completed successfully!");
     }
     
-    private void initializeTrains() {
-        log.info("Initializing sample trains...");
+    private void clearExistingData() {
+        log.info("Clearing existing train and schedule data...");
+        scheduleRepository.deleteAll();
+        trainRepository.deleteAll();
+        log.info("Existing data cleared successfully");
+    }
+    
+    private void initializeSriLankanTrains() {
+        log.info("Initializing Sri Lankan trains...");
         
         List<Train> trains = Arrays.asList(
-                createTrain("TR001", "Rajdhani Express", TrainType.FIRST_CLASS, 300),
-                createTrain("TR002", "Shatabdi Express", TrainType.FIRST_CLASS, 250),
-                createTrain("TR003", "Duronto Express", TrainType.SECOND_CLASS, 400),
-                createTrain("TR004", "Garib Rath", TrainType.THIRD_CLASS, 500),
-                createTrain("TR005", "Jan Shatabdi", TrainType.SECOND_CLASS, 350)
+                // Intercity Express Trains
+                createTrain("ICE001", "Podi Menike", TrainType.FIRST_CLASS, 280),
+                createTrain("ICE002", "Udarata Menike", TrainType.FIRST_CLASS, 300),
+                createTrain("ICE003", "Rajarata Rajini", TrainType.SECOND_CLASS, 350),
+                createTrain("ICE004", "Ruhunu Kumari", TrainType.SECOND_CLASS, 320),
+                createTrain("ICE005", "Yal Devi", TrainType.FIRST_CLASS, 250),
+                
+                // Express Trains  
+                createTrain("EXP006", "Uttara Devi", TrainType.SECOND_CLASS, 400),
+                createTrain("EXP007", "Galu Kumari", TrainType.SECOND_CLASS, 380),
+                createTrain("EXP008", "Sagarika", TrainType.THIRD_CLASS, 450),
+                createTrain("EXP009", "Samudra Devi", TrainType.THIRD_CLASS, 420),
+                createTrain("EXP010", "Ran Kumari", TrainType.SECOND_CLASS, 350),
+                
+                // Night Mail Trains
+                createTrain("NM011", "Upcountry Night Mail", TrainType.SECOND_CLASS, 300),
+                createTrain("NM012", "Southern Night Mail", TrainType.THIRD_CLASS, 380),
+                
+                // Special Trains
+                createTrain("SP013", "Viceroy Special", TrainType.FIRST_CLASS, 200),
+                createTrain("SP014", "Kandy Esala Special", TrainType.FIRST_CLASS, 180),
+                createTrain("SP015", "Coastal Line Express", TrainType.SECOND_CLASS, 320)
         );
         
         trainRepository.saveAll(trains);
-        log.info("Created {} sample trains", trains.size());
+        log.info("Created {} Sri Lankan trains", trains.size());
     }
     
-    private void initializeUsers() {
-        log.info("Initializing sample users...");
-        
-        List<User> users = Arrays.asList(
-                createUser("john.doe@email.com", "password123", "John", "Doe", "+1234567890"),
-                createUser("jane.smith@email.com", "password123", "Jane", "Smith", "+1234567891"),
-                createUser("admin@email.com", "admin123", "Admin", "User", "+1234567892")
-        );
-        
-        userRepository.saveAll(users);
-        log.info("Created {} sample users", users.size());
-    }
-    
-    private void initializeSchedules() {
-        log.info("Initializing sample schedules...");
+    private void initializeSriLankanSchedules() {
+        log.info("Initializing Sri Lankan train schedules...");
         
         List<Train> trains = trainRepository.findAll();
         LocalDate today = LocalDate.now();
@@ -81,39 +85,99 @@ public class DataInitializer implements CommandLineRunner {
         LocalDate dayAfterTomorrow = today.plusDays(2);
         
         List<Schedule> schedules = Arrays.asList(
-                // Rajdhani Express schedules
-                createSchedule(trains.get(0), "New Delhi", "Mumbai", tomorrow, 
-                        LocalTime.of(16, 30), LocalTime.of(8, 30), 2500.0),
-                createSchedule(trains.get(0), "Mumbai", "New Delhi", dayAfterTomorrow, 
-                        LocalTime.of(17, 0), LocalTime.of(9, 0), 2500.0),
+                // Podi Menike (Colombo Fort - Badulla)
+                createSchedule(trains.get(0), "Colombo Fort", "Badulla", tomorrow, 
+                        LocalTime.of(5, 55), LocalTime.of(14, 48), 1850.0),
+                createSchedule(trains.get(0), "Badulla", "Colombo Fort", dayAfterTomorrow, 
+                        LocalTime.of(8, 30), LocalTime.of(17, 30), 1850.0),
                 
-                // Shatabdi Express schedules
-                createSchedule(trains.get(1), "New Delhi", "Chandigarh", tomorrow, 
-                        LocalTime.of(7, 20), LocalTime.of(10, 45), 800.0),
-                createSchedule(trains.get(1), "Chandigarh", "New Delhi", tomorrow, 
-                        LocalTime.of(18, 30), LocalTime.of(21, 55), 800.0),
+                // Udarata Menike (Colombo Fort - Badulla)
+                createSchedule(trains.get(1), "Colombo Fort", "Badulla", tomorrow, 
+                        LocalTime.of(9, 35), LocalTime.of(18, 45), 2100.0),
+                createSchedule(trains.get(1), "Badulla", "Colombo Fort", tomorrow, 
+                        LocalTime.of(11, 10), LocalTime.of(20, 15), 2100.0),
                 
-                // Duronto Express schedules
-                createSchedule(trains.get(2), "Kolkata", "New Delhi", tomorrow, 
-                        LocalTime.of(22, 5), LocalTime.of(10, 15), 1800.0),
-                createSchedule(trains.get(2), "New Delhi", "Kolkata", dayAfterTomorrow, 
-                        LocalTime.of(16, 50), LocalTime.of(5, 0), 1800.0),
+                // Rajarata Rajini (Colombo Fort - Vavuniya)
+                createSchedule(trains.get(2), "Colombo Fort", "Vavuniya", tomorrow, 
+                        LocalTime.of(7, 25), LocalTime.of(13, 45), 950.0),
+                createSchedule(trains.get(2), "Vavuniya", "Colombo Fort", tomorrow, 
+                        LocalTime.of(14, 30), LocalTime.of(20, 50), 950.0),
                 
-                // Garib Rath schedules
-                createSchedule(trains.get(3), "Chennai", "New Delhi", tomorrow, 
-                        LocalTime.of(11, 40), LocalTime.of(7, 15), 1200.0),
-                createSchedule(trains.get(3), "New Delhi", "Chennai", dayAfterTomorrow, 
-                        LocalTime.of(20, 30), LocalTime.of(16, 5), 1200.0),
+                // Ruhunu Kumari (Colombo Fort - Matara)
+                createSchedule(trains.get(3), "Colombo Fort", "Matara", tomorrow, 
+                        LocalTime.of(6, 0), LocalTime.of(9, 45), 420.0),
+                createSchedule(trains.get(3), "Matara", "Colombo Fort", tomorrow, 
+                        LocalTime.of(15, 30), LocalTime.of(19, 15), 420.0),
                 
-                // Jan Shatabdi schedules
-                createSchedule(trains.get(4), "Bangalore", "Chennai", tomorrow, 
-                        LocalTime.of(6, 0), LocalTime.of(11, 30), 600.0),
-                createSchedule(trains.get(4), "Chennai", "Bangalore", tomorrow, 
-                        LocalTime.of(14, 0), LocalTime.of(19, 30), 600.0)
+                // Yal Devi (Colombo Fort - Jaffna)
+                createSchedule(trains.get(4), "Colombo Fort", "Jaffna", tomorrow, 
+                        LocalTime.of(5, 50), LocalTime.of(17, 40), 1680.0),
+                createSchedule(trains.get(4), "Jaffna", "Colombo Fort", dayAfterTomorrow, 
+                        LocalTime.of(5, 45), LocalTime.of(17, 35), 1680.0),
+                
+                // Uttara Devi (Colombo Fort - Kankesanturai)
+                createSchedule(trains.get(5), "Colombo Fort", "Kankesanturai", tomorrow, 
+                        LocalTime.of(22, 45), LocalTime.of(12, 30), 1450.0),
+                createSchedule(trains.get(5), "Kankesanturai", "Colombo Fort", dayAfterTomorrow, 
+                        LocalTime.of(13, 15), LocalTime.of(3, 0), 1450.0),
+                
+                // Galu Kumari (Colombo Fort - Galle)
+                createSchedule(trains.get(6), "Colombo Fort", "Galle", tomorrow, 
+                        LocalTime.of(7, 15), LocalTime.of(10, 5), 350.0),
+                createSchedule(trains.get(6), "Galle", "Colombo Fort", tomorrow, 
+                        LocalTime.of(17, 45), LocalTime.of(20, 35), 350.0),
+                
+                // Sagarika (Colombo Fort - Matara)
+                createSchedule(trains.get(7), "Colombo Fort", "Matara", tomorrow, 
+                        LocalTime.of(15, 35), LocalTime.of(19, 30), 280.0),
+                createSchedule(trains.get(7), "Matara", "Colombo Fort", dayAfterTomorrow, 
+                        LocalTime.of(6, 25), LocalTime.of(10, 20), 280.0),
+                
+                // Samudra Devi (Colombo Fort - Beliatta)
+                createSchedule(trains.get(8), "Colombo Fort", "Beliatta", tomorrow, 
+                        LocalTime.of(6, 35), LocalTime.of(11, 20), 480.0),
+                createSchedule(trains.get(8), "Beliatta", "Colombo Fort", tomorrow, 
+                        LocalTime.of(14, 15), LocalTime.of(19, 0), 480.0),
+                
+                // Ran Kumari (Colombo Fort - Kandy)
+                createSchedule(trains.get(9), "Colombo Fort", "Kandy", tomorrow, 
+                        LocalTime.of(6, 30), LocalTime.of(9, 15), 520.0),
+                createSchedule(trains.get(9), "Kandy", "Colombo Fort", tomorrow, 
+                        LocalTime.of(16, 0), LocalTime.of(18, 45), 520.0),
+                
+                // Upcountry Night Mail (Colombo Fort - Badulla)
+                createSchedule(trains.get(10), "Colombo Fort", "Badulla", tomorrow, 
+                        LocalTime.of(20, 30), LocalTime.of(6, 50), 1280.0),
+                createSchedule(trains.get(10), "Badulla", "Colombo Fort", dayAfterTomorrow, 
+                        LocalTime.of(21, 0), LocalTime.of(7, 20), 1280.0),
+                
+                // Southern Night Mail (Colombo Fort - Matara)
+                createSchedule(trains.get(11), "Colombo Fort", "Matara", tomorrow, 
+                        LocalTime.of(21, 45), LocalTime.of(2, 35), 320.0),
+                createSchedule(trains.get(11), "Matara", "Colombo Fort", dayAfterTomorrow, 
+                        LocalTime.of(22, 30), LocalTime.of(3, 20), 320.0),
+                
+                // Viceroy Special (Colombo Fort - Kandy)
+                createSchedule(trains.get(12), "Colombo Fort", "Kandy", tomorrow, 
+                        LocalTime.of(8, 30), LocalTime.of(11, 0), 850.0),
+                createSchedule(trains.get(12), "Kandy", "Colombo Fort", tomorrow, 
+                        LocalTime.of(15, 30), LocalTime.of(18, 0), 850.0),
+                
+                // Kandy Esala Special (Colombo Fort - Kandy)
+                createSchedule(trains.get(13), "Colombo Fort", "Kandy", tomorrow, 
+                        LocalTime.of(10, 15), LocalTime.of(12, 45), 950.0),
+                createSchedule(trains.get(13), "Kandy", "Colombo Fort", tomorrow, 
+                        LocalTime.of(17, 15), LocalTime.of(19, 45), 950.0),
+                
+                // Coastal Line Express (Colombo Fort - Galle)
+                createSchedule(trains.get(14), "Colombo Fort", "Galle", tomorrow, 
+                        LocalTime.of(14, 20), LocalTime.of(17, 15), 380.0),
+                createSchedule(trains.get(14), "Galle", "Colombo Fort", tomorrow, 
+                        LocalTime.of(8, 45), LocalTime.of(11, 40), 380.0)
         );
         
         scheduleRepository.saveAll(schedules);
-        log.info("Created {} sample schedules", schedules.size());
+        log.info("Created {} Sri Lankan train schedules", schedules.size());
     }
     
     private Train createTrain(String trainNumber, String trainName, TrainType trainType, int totalSeats) {
@@ -124,16 +188,6 @@ public class DataInitializer implements CommandLineRunner {
         train.setTotalSeats(totalSeats);
         train.setAvailableSeats(totalSeats);
         return train;
-    }
-    
-    private User createUser(String email, String password, String firstName, String lastName, String phoneNumber) {
-        User user = new User();
-        user.setEmail(email);
-        user.setPassword(password); // In production, this should be hashed
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
-        user.setPhoneNumber(phoneNumber);
-        return user;
     }
     
     private Schedule createSchedule(Train train, String departureStation, String arrivalStation, 

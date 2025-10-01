@@ -17,9 +17,8 @@ public class SimpleBooking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
-    
+   
+
     @Column(name = "schedule_id", nullable = false)
     private Long scheduleId;
     
@@ -52,11 +51,10 @@ public class SimpleBooking {
     public SimpleBooking() {}
     
     // Constructor with parameters
-    public SimpleBooking(Long userId, Long scheduleId, String passengerName, 
+    public SimpleBooking(Long scheduleId, String passengerName, 
                         String passengerEmail, String passengerPhone, 
                         Integer seatCount, Double totalAmount, 
                         BookingStatus bookingStatus, String pnrNumber) {
-        this.userId = userId;
         this.scheduleId = scheduleId;
         this.passengerName = passengerName;
         this.passengerEmail = passengerEmail;
@@ -71,9 +69,6 @@ public class SimpleBooking {
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-    
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
     
     public Long getScheduleId() { return scheduleId; }
     public void setScheduleId(Long scheduleId) { this.scheduleId = scheduleId; }
@@ -113,7 +108,6 @@ public class SimpleBooking {
     public String toString() {
         return "SimpleBooking{" +
                 "id=" + id +
-                ", userId=" + userId +
                 ", scheduleId=" + scheduleId +
                 ", passengerName='" + passengerName + '\'' +
                 ", passengerEmail='" + passengerEmail + '\'' +
